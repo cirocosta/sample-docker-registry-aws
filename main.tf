@@ -55,9 +55,16 @@ resource "aws_security_group" "allow-ssh-and-egress" {
   }
 }
 
+# Template the instance initialization script with information
+# regarding the region and bucket that the user configured.
 data "template_cloudinit_config" "init" {
   gzip          = true
   base64_encode = true
+
+  vars {
+    bucket = "${var.bucket}"
+    region = "${var.region}"
+  }
 
   part {
     content_type = "text/x-shellscript"

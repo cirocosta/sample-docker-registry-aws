@@ -1,8 +1,15 @@
 #!/bin/bash
 
-set -o errexit
+# Setups the registry machine to have a running
+# Docker registry that makes use of the instance
+# profile set in the machine to authenticate
+# against the S3 bucket set for storing registry's
+# data.
 
-main () {
+set -o errexit
+set -o nounset
+
+main() {
   install_docker
   run_registry
 }
@@ -16,18 +23,21 @@ install_docker() {
   sudo sh ./get-docker.sh
 }
 
-run_registry () {
+run_registry() {
   echo "INFO:
   Starting docker registry.
+
+  REGION=${region}
+  BUCKET=${bucket}
   "
 
   docker run \
     --name registry \
     --detach \
-    --env "REGISTRY_HTTP_SECRET=wedeploy-secret" \
+    --env "REGISTRY_HTTP_SECRET=a-secret" \
     --env "REGISTRY_STORAGE=s3" \
-    --env "REGISTRY_STORAGE_S3_REGION=sa-east-1" \
-    --env "REGISTRY_STORAGE_S3_BUCKET=sample-docker-registry-bucket" \
+    --env "REGISTRY_STORAGE_S3_REGION=${region}" \
+    --env "REGISTRY_STORAGE_S3_BUCKET=${bucket}" \
     --network host \
     registry
 }

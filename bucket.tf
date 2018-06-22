@@ -1,3 +1,6 @@
+# Create a AWS S3 bucket that is encrypted by default
+# at the server side using the name provided by the
+# `bucket` variable.
 resource "aws_s3_bucket" "encrypted" {
   bucket        = "${var.bucket}"
   force_destroy = true
@@ -11,6 +14,10 @@ resource "aws_s3_bucket" "encrypted" {
   }
 }
 
+# Set up the bucket policy to allow only a 
+# specific set of operations which can only me
+# made by users that make use of a specific
+# IAM role.
 resource "aws_s3_bucket_policy" "main" {
   bucket = "${var.bucket}"
 
