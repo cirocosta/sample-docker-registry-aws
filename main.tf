@@ -13,7 +13,7 @@ resource "aws_key_pair" "main" {
 }
 
 resource "aws_security_group" "allow-registry-ingress" {
-  name = "main"
+  name = "allow-registry-ingress"
 
   description = "Allows ingress SSH traffic and egress to any address."
   vpc_id      = "${data.aws_vpc.main.id}"
@@ -31,7 +31,7 @@ resource "aws_security_group" "allow-registry-ingress" {
 }
 
 resource "aws_security_group" "allow-ssh-and-egress" {
-  name = "main"
+  name = "allow-ssh-and-egress"
 
   description = "Allows ingress SSH traffic and egress to any address."
   vpc_id      = "${data.aws_vpc.main.id}"
@@ -55,15 +55,39 @@ resource "aws_security_group" "allow-ssh-and-egress" {
   }
 }
 
+# Template the registry configuration with the desired
+# bucket and region information.
+#
+# Note.: no credentials are needed given that the golang
+# aws sdk is going to retrieve them from the instance
+# role that we set to the machine.
+data "template_file" "registry-config" {
+  template = "${file("./registry.yml.tpl")}"
+
+  vars {
+    bucket = "${var.bucket}"
+    region = "${var.region}"
+  }
+}
+
 # Template the instance initialization script with information
 # regarding the region and bucket that the user configured.
 data "template_cloudinit_config" "init" {
   gzip          = true
   base64_encode = true
 
-  vars {
-    bucket = "${var.bucket}"
-    region = "${var.region}"
+  part {
+    content_type = "text/cloud-config"
+
+    content = <<EOF
+#cloud-config
+write_files:
+  - content: ${base64encode("${data.template_file.registry-config.rendered}")}
+    encoding: b64
+    owner: root:root
+    path: /etc/registry.yml
+    permissions: '0755'
+EOF
   }
 
   part {
