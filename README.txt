@@ -7,4 +7,10 @@ USAGE
 
   terraform init 
   terraform apply
+  make ssh
+
+
+KNOW MORE
+
+  https://ops.tips/gists/gists/aws-s3-private-docker-registry
 
