@@ -3,15 +3,31 @@ provider "aws" {
   profile = "${var.profile}"
 }
 
+# We could create an extra VPC, properly set a subnet and
+# have the whole thing configured (internet gateway, an updated
+# routing table etc).
+#
+# However, given that this is only a sample, we can make use of
+# the default VPC (assuming you didn't delete your default VPC
+# in your region, you can too).
 data "aws_vpc" "main" {
   default = true
 }
 
+# Provide the public key that we want in our instance so we can
+# SSH into it using the other side (private) of it.
 resource "aws_key_pair" "main" {
   key_name_prefix = "sample-key"
   public_key      = "${file("./keys/key.rsa.pub")}"
 }
 
+# Create a security group that allows anyone to access our
+# instance's port 5000 (where the main registry functionality
+# lives).
+#
+# Naturally, you'd not do this if you're deploying a private
+# registry - something you could do is allow the internal cidr
+# and not 0.0.0.0/0.
 resource "aws_security_group" "allow-registry-ingress" {
   name = "allow-registry-ingress"
 
@@ -30,6 +46,7 @@ resource "aws_security_group" "allow-registry-ingress" {
   }
 }
 
+# Allow SSHing into the instance
 resource "aws_security_group" "allow-ssh-and-egress" {
   name = "allow-ssh-and-egress"
 
