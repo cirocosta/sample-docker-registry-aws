@@ -12,5 +12,5 @@ USAGE
 
 KNOW MORE
 
-  https://ops.tips/gists/gists/aws-s3-private-docker-registry
+  https://ops.tips/gists/aws-s3-private-docker-registry
 
